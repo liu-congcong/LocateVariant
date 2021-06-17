@@ -6,7 +6,7 @@ Locate variants in genes:
 * Chromosome: chromosome id
 * Position: position (1-based)
 * Transcript: transcript id | - (intergenic region)
-* Type: exon | promoter | cds (5'utr and 3'utr will be added soon)
+* Type: exon | promoter | cds (**5'utr and 3'utr will be added soon**)
 * Start: start position of the type (1-based)
 * End: end position of the type (1-based)
 * **Offset: offset will be added soon**

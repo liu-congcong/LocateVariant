@@ -4,6 +4,4 @@
 
 unsigned long ElfHash(char *);
 
-unsigned long CodonHash(char *);
-
 #endif

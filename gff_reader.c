@@ -21,48 +21,34 @@ static int create_transcript_hash(Transcript ***hash, unsigned long hash_size)
 
 static unsigned long add2transcript_hash(Transcript **hash, unsigned long hash_size, char *transcript, char *chromosome, char strand, unsigned long start, unsigned long end, char type)
 {
-    unsigned long flag = 1;
+    int flag = 0;
     unsigned long hash_value = ElfHash(transcript) % hash_size;
     Transcript *transcript_node = hash[hash_value];
     while (transcript_node)
     {
         if (!strcmp(transcript_node->transcript, transcript))
         {
-            flag = 0; // Exist.
-            break;
-        }
-        else if (transcript_node->next)
-        {
-            transcript_node = transcript_node->next;
-        }
-        else
-        {
             break;
         };
+        transcript_node = transcript_node->next;
     };
-    if (flag)
+
+    if (!transcript_node) // Add new transcript node.
     {
-        Transcript *new_transcript_node = malloc(sizeof(Transcript));
-        new_transcript_node->transcript = malloc(sizeof(char) * (strlen(transcript) + 1));
-        strcpy(new_transcript_node->transcript, transcript);
-        new_transcript_node->chromosome = malloc(sizeof(char) * (strlen(chromosome) + 1));
-        strcpy(new_transcript_node->chromosome, chromosome);
-        new_transcript_node->strand = strand;
-        new_transcript_node->start = 0;
-        new_transcript_node->end = 0;
-        new_transcript_node->exon_number = 0;
-        new_transcript_node->cds_number = 0;
-        new_transcript_node->element = NULL;
-        new_transcript_node->next = NULL;
-        if (transcript_node)
-        {
-            transcript_node->next = new_transcript_node;
-        }
-        else
-        {
-            hash[hash_value] = new_transcript_node;
-        };
-        transcript_node = new_transcript_node;
+        flag = 1;
+        transcript_node = malloc(sizeof(Transcript));
+        transcript_node->transcript = malloc(sizeof(char) * (strlen(transcript) + 1));
+        strcpy(transcript_node->transcript, transcript);
+        transcript_node->chromosome = malloc(sizeof(char) * (strlen(chromosome) + 1));
+        strcpy(transcript_node->chromosome, chromosome);
+        transcript_node->strand = strand;
+        transcript_node->start = 0;
+        transcript_node->end = 0;
+        transcript_node->exon_number = 0;
+        transcript_node->cds_number = 0;
+        transcript_node->element = NULL;
+        transcript_node->next = hash[hash_value];
+        hash[hash_value] = transcript_node;
     };
     if (type == 'e')
     {
@@ -72,66 +58,38 @@ static unsigned long add2transcript_hash(Transcript **hash, unsigned long hash_s
     {
         transcript_node->cds_number++;
     };
-    Element *new_element_node = malloc(sizeof(Element));
-    new_element_node->type = type;
-    new_element_node->positions[0] = start;
-    new_element_node->positions[1] = end;
-    new_element_node->next = NULL;
-    Element *element_node = transcript_node->element;
-    if (element_node)
-    {
-        while (element_node->next)
-        {
-            element_node = element_node->next;
-        };
-        element_node->next = new_element_node;
-    }
-    else
-    {
-        transcript_node->element = new_element_node;
-    };
+    Element *element_node = malloc(sizeof(Element));
+    element_node->type = type;
+    element_node->positions[0] = start;
+    element_node->positions[1] = end;
+    element_node->next = transcript_node->element;
+    transcript_node->element = element_node;
     return flag;
 }
 
 static int add2chromosome_transcript_hash(ChromosomeTranscript **hash, unsigned long hash_size, char *chromosome, char *transcript, unsigned long plus)
 {
-    int flag = false;
     unsigned long hash_value = ElfHash(chromosome) % hash_size;
     ChromosomeTranscript *node = hash[hash_value];
     while (node)
     {
         if (!strcmp(node->chromosome, chromosome))
         {
-            flag = true;
-            break;
-        }
-        else if (node->next)
-        {
-            node = node->next;
-        }
-        else
-        {
             break;
         };
+        node = node->next;
     };
-    if (!flag)
+
+    if (!node)
     {
-        ChromosomeTranscript *new_node = malloc(sizeof(ChromosomeTranscript));
-        new_node->chromosome = malloc(sizeof(char) * strlen(chromosome) + 1);
-        strcpy(new_node->chromosome, chromosome);
-        new_node->transcript_number = 0;
-        new_node->transcript_index = 0;
-        new_node->transcript = NULL;
-        new_node->next = NULL;
-        if (node)
-        {
-            node->next = new_node;
-        }
-        else
-        {
-            hash[hash_value] = new_node;
-        };
-        node = new_node;
+        node = malloc(sizeof(ChromosomeTranscript));
+        node->chromosome = malloc(sizeof(char) * strlen(chromosome) + 1);
+        strcpy(node->chromosome, chromosome);
+        node->transcript_number = 0;
+        node->transcript_index = 0;
+        node->transcript = NULL;
+        node->next = hash[hash_value];
+        hash[hash_value] = node;
     };
     node->transcript_number += plus;
     return 0;

@@ -18,7 +18,6 @@ typedef struct ChromosomeVariant
     char *chromosome;
     unsigned long variant_number;
     Variant *variant;
-    Variant *temp_variant;
     struct ChromosomeVariant *next;
 } ChromosomeVariant;
 

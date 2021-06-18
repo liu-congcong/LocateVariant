@@ -14,60 +14,34 @@ static int create_chromosome_variant_hash(ChromosomeVariant ***chromosome_varian
 
 static int add2chromosome_variant_hash(ChromosomeVariant **hash, unsigned long hash_size, char *chromosome, unsigned long position, char *variant)
 {
-    bool flag = false;
     unsigned long hash_value = ElfHash(chromosome) % hash_size;
     ChromosomeVariant *chromosome_variant_node = hash[hash_value];
     while (chromosome_variant_node)
     {
         if (!strcmp(chromosome_variant_node->chromosome, chromosome))
         {
-            flag = true;
-            break;
-        }
-        else if (chromosome_variant_node->next)
-        {
-            chromosome_variant_node = chromosome_variant_node->next;
-        }
-        else
-        {
             break;
         };
+        chromosome_variant_node = chromosome_variant_node->next;
     };
-    if (!flag)
+    if (!chromosome_variant_node)
     {
-        ChromosomeVariant *new_chromosome_variant_node = malloc(sizeof(ChromosomeVariant));
-        new_chromosome_variant_node->chromosome = malloc(sizeof(char) * (strlen(chromosome) + 1));
-        strcpy(new_chromosome_variant_node->chromosome, chromosome);
-        new_chromosome_variant_node->variant_number = 0;
-        new_chromosome_variant_node->variant = NULL;
-        new_chromosome_variant_node->temp_variant = NULL;
-        new_chromosome_variant_node->next = NULL;
-        if (chromosome_variant_node)
-        {
-            chromosome_variant_node->next = new_chromosome_variant_node;
-        }
-        else
-        {
-            hash[hash_value] = new_chromosome_variant_node;
-        };
-        chromosome_variant_node = new_chromosome_variant_node;
+        chromosome_variant_node = malloc(sizeof(ChromosomeVariant));
+        chromosome_variant_node->chromosome = malloc(sizeof(char) * (strlen(chromosome) + 1));
+        strcpy(chromosome_variant_node->chromosome, chromosome);
+        chromosome_variant_node->variant_number = 0;
+        chromosome_variant_node->variant = NULL;
+        chromosome_variant_node->next = hash[hash_value];
+        hash[hash_value] = chromosome_variant_node;
     };
     chromosome_variant_node->variant_number++;
 
-    Variant *new_variant_node = malloc(sizeof(Variant));
-    new_variant_node->variant = malloc(sizeof(char) * (strlen(variant) + 1));
-    strcpy(new_variant_node->variant, variant);
-    new_variant_node->position = position;
-    new_variant_node->next = NULL;
-    if (chromosome_variant_node->temp_variant)
-    {
-        chromosome_variant_node->temp_variant->next = new_variant_node;
-    }
-    else
-    {
-        chromosome_variant_node->variant = new_variant_node;
-    };
-    chromosome_variant_node->temp_variant = new_variant_node;
+    Variant *variant_node = malloc(sizeof(Variant));
+    variant_node->variant = malloc(sizeof(char) * (strlen(variant) + 1));
+    strcpy(variant_node->variant, variant);
+    variant_node->position = position;
+    variant_node->next = chromosome_variant_node->variant;
+    chromosome_variant_node->variant = variant_node;
     return 0;
 }
 

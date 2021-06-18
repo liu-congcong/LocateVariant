@@ -22,6 +22,7 @@ typedef struct Transcript
     unsigned long end;
     unsigned long exon_number;
     unsigned long cds_number;
+    unsigned long element_number;
     Element *element;
     struct Transcript *next;
 } Transcript;

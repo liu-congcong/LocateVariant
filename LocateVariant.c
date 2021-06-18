@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
     {
         print_help();
     };
-    unsigned long hash_size = 1572869;
+
+    unsigned long hash_size = 1572869ul;
 
     ChromosomeTranscript **chromosome_transcript = NULL;
     ChromosomeVariant **chromosome_variant = NULL;
@@ -45,26 +46,27 @@ int main(int argc, char *argv[])
     read_vcf_file(vcf_file, &chromosome_variant, hash_size);
 
     char type[9];
-
     printf("Variant\tChromosome\tPosition\tTranscript\tType\tStart\tEnd\n");
     for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++)
     {
         for (ChromosomeVariant *chromosome_variant_node = chromosome_variant[hash_index]; chromosome_variant_node; chromosome_variant_node = chromosome_variant_node->next)
         {
-            Variant *Variant_Node = chromosome_variant_node->variant;
+            Variant *variant_node = chromosome_variant_node->variant; // Head node of variants on a chromosome.
             char *chromosome = chromosome_variant_node->chromosome;
             ChromosomeTranscript *chromosome_transcript_node = find_chromosome_transcript(chromosome_transcript, hash_size, chromosome);
             if (chromosome_transcript_node)
             {
-                Transcript *Transcript_Node = chromosome_transcript_node->transcript;
-                unsigned long transcript_offset = 0;
+                Transcript *Transcript_Node = chromosome_transcript_node->transcript; // Head node of transcripts on a chromosome.
+                unsigned long transcript_number = chromosome_transcript_node->transcript_number;
+
+                /* For each variant. */
                 for (unsigned long variant_index = 0; variant_index < chromosome_variant_node->variant_number; variant_index++)
                 {
                     bool flag = true; // Intergeneic region.
-                    Variant *variant_node = Variant_Node + variant_index;
-                    for (unsigned long transcript_index = 0; transcript_index < chromosome_transcript_node->transcript_number; transcript_index++)
+                    unsigned long transcript_index = 0;
+                    while (transcript_index < transcript_number)
                     {
-                        Transcript *transcript_node = Transcript_Node + transcript_offset + transcript_index;
+                        Transcript *transcript_node = Transcript_Node + transcript_index;
                         if (variant_node->position < transcript_node->start)
                         {
                             if (flag)
@@ -75,9 +77,8 @@ int main(int argc, char *argv[])
                         }
                         else if (variant_node->position <= transcript_node->end) // Overlap.
                         {
-                            // printf("%s\t%s\t%lu\t%s\t%lu-%lu\n", variant_node->variant, chromosome, variant_node->position, transcript_node->transcript, transcript_node->start, transcript_node->end);
                             Element *Element_Node = transcript_node->element;
-                            for (unsigned long element_index = 0; element_index < transcript_node->exon_number * 2 + transcript_node->cds_number - 1; element_index++)
+                            for (unsigned long element_index = 0; element_index < transcript_node->element_number; element_index++)
                             {
                                 Element *element_node = Element_Node + element_index;
                                 if (variant_node->position >= element_node->positions[0] && variant_node->position <= element_node->positions[1])
@@ -96,26 +97,40 @@ int main(int argc, char *argv[])
                                     case 'p':
                                         strcpy(type, "promoter");
                                         break;
+                                    case '5':
+                                        strcpy(type, "5'utr");
+                                        break;
+                                    case '3':
+                                        strcpy(type, "3'utr");
+                                        break;
                                     default:
                                         break;
                                     };
                                     printf("%s\t%s\t%lu\t%s\t%s\t%lu\t%lu\n", variant_node->variant, chromosome, variant_node->position, transcript_node->transcript, type, element_node->positions[0], element_node->positions[1]);
                                 };
                             };
+                            transcript_index++;
                             flag = false;
                         }
-                        else if (!transcript_index)
+                        else if (transcript_index)
                         {
-                            transcript_offset++;
+                            transcript_index++;
+                        }
+                        else
+                        {
+                            Transcript_Node++;
+                            transcript_number--;
                         };
                     };
+                    variant_node++;
                 };
             }
             else
             {
                 for (unsigned long variant_index = 0; variant_index < chromosome_variant_node->variant_number; variant_index++)
                 {
-                    printf("%s\t%s\t%lu\t-\t-\t-\t-\n", (Variant_Node + variant_index)->variant, chromosome, (Variant_Node + variant_index)->position);
+                    printf("%s\t%s\t%lu\t-\t-\t-\t-\n", variant_node->variant, chromosome, variant_node->position);
+                    variant_node++;
                 };
             };
         };

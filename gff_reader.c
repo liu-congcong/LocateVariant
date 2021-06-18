@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <limits.h>
 #include "hash.h"
 #include "gff_reader.h"
 
@@ -46,6 +47,7 @@ static unsigned long add2transcript_hash(Transcript **hash, unsigned long hash_s
         transcript_node->end = 0;
         transcript_node->exon_number = 0;
         transcript_node->cds_number = 0;
+        transcript_node->element_number = 0;
         transcript_node->element = NULL;
         transcript_node->next = hash[hash_value];
         hash[hash_value] = transcript_node;
@@ -169,13 +171,27 @@ static int compare_transcript(const void *x1, const void *x2)
 
 static int parse_gene_structure(ChromosomeTranscript **chromosome_transcript_hash, Transcript **transcript_hash, unsigned long hash_size)
 {
-    for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++) // Initialization.
+    unsigned long element_array_size = 0;
+    for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++)
     {
+        /* Initialization. */
         for (ChromosomeTranscript *chromosome_transcript_node = chromosome_transcript_hash[hash_index]; chromosome_transcript_node; chromosome_transcript_node = chromosome_transcript_node->next)
         {
             chromosome_transcript_node->transcript = malloc(sizeof(Transcript) * chromosome_transcript_node->transcript_number);
         };
+        /* #promoter + #exon + #intron + #cds + #5'utr + #3'utr */
+        /* 1 + #exon + #exon - 1 + #exon + 2 */
+        /* 3 * #exon + 2 */
+        for (Transcript *transcript_node = transcript_hash[hash_index]; transcript_node; transcript_node = transcript_node->next)
+        {
+            if (element_array_size < transcript_node->exon_number)
+            {
+                element_array_size = transcript_node->exon_number;
+            };
+        };
     };
+    element_array_size = 3 * element_array_size + 2;
+    Element *element_array = malloc(sizeof(Element) * element_array_size);
 
     for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++)
     {
@@ -189,57 +205,98 @@ static int parse_gene_structure(ChromosomeTranscript **chromosome_transcript_has
             new_transcript_node->strand = transcript_node->strand;
             new_transcript_node->exon_number = transcript_node->exon_number;
             new_transcript_node->cds_number = transcript_node->cds_number;
+            new_transcript_node->element_number = 0;
 
-            unsigned long element_array_size = transcript_node->exon_number * 2 + transcript_node->cds_number;
-            Element *element_array = malloc(sizeof(Element) * element_array_size); // #exon + #cds + #intron + #promoter = 2 * #exon + #cds
-            unsigned long left_index = 0;
-            unsigned long right_index = element_array_size - 1;
+            unsigned long cds_index = transcript_node->exon_number;
+
+            for (Element *element = transcript_node->element; element; element = element->next)
+            {
+                if (element->type == 'e') // Add exon.
+                {
+                    memcpy(element_array + new_transcript_node->element_number, element, sizeof(Element));
+                    (element_array + new_transcript_node->element_number)->next = NULL;
+                    new_transcript_node->element_number++;
+                }
+                else // Add cds.
+                {
+                    memcpy(element_array + cds_index, element, sizeof(Element));
+                    (element_array + cds_index)->next = NULL;
+                    cds_index++;
+                };
+            };
+            new_transcript_node->element_number += transcript_node->cds_number;
+
             if (transcript_node->exon_number)
             {
-                for (Element *element = transcript_node->element; element; element = element->next) // Step1: add all exons to generate introns.
-                {
-                    if (element->type == 'e')
-                    {
-                        memcpy(element_array + left_index, element, sizeof(Element));
-                        (element_array + left_index)->next = NULL;
-                        left_index++;
-                    }
-                    else
-                    {
-                        memcpy(element_array + right_index, element, sizeof(Element));
-                        (element_array + right_index)->next = NULL;
-                        right_index--;
-                    };
-                };
-                qsort(element_array, left_index, sizeof(Element), compare_element); // All exons have been sorted.
+                qsort(element_array, transcript_node->exon_number, sizeof(Element), compare_element); // Sort exons.
 
-                if (transcript_node->strand == '-') // Step2: add promoter.
+                /* Add intron. */
+                for (unsigned long element_index_ = 0; element_index_ < transcript_node->exon_number - 1; element_index_++)
                 {
-                    (element_array + right_index)->positions[0] = (element_array + left_index - 1)->positions[1] + 1;
-                    (element_array + right_index)->positions[1] = (element_array + left_index - 1)->positions[1] + 2000;
+                    (element_array + new_transcript_node->element_number)->type = 'i';
+                    (element_array + new_transcript_node->element_number)->next = NULL;
+                    (element_array + new_transcript_node->element_number)->positions[0] = (element_array + element_index_)->positions[1] + 1;
+                    (element_array + new_transcript_node->element_number)->positions[1] = (element_array + element_index_ + 1)->positions[0] - 1;
+                    new_transcript_node->element_number++;
+                };
+
+                /* Add promoter. */
+                if (transcript_node->strand == '-')
+                {
+                    (element_array + new_transcript_node->element_number)->positions[0] = (element_array + transcript_node->exon_number - 1)->positions[1] + 1;
+                    (element_array + new_transcript_node->element_number)->positions[1] = (element_array + transcript_node->exon_number - 1)->positions[1] + 2000;
                 }
                 else
                 {
-                    (element_array + right_index)->positions[0] = element_array->positions[0] >= 2000 ? element_array->positions[0] - 2000 : 0;
-                    (element_array + right_index)->positions[1] = element_array->positions[0] - 1;
+                    (element_array + new_transcript_node->element_number)->positions[0] = element_array->positions[0] >= 2000 ? element_array->positions[0] - 2000 : 0;
+                    (element_array + new_transcript_node->element_number)->positions[1] = element_array->positions[0] - 1;
                 };
-                (element_array + right_index)->type = 'p';
-                right_index--;
+                (element_array + new_transcript_node->element_number)->type = 'p';
+                new_transcript_node->element_number++;
 
-                for (unsigned long left_index_ = 0; left_index_ < left_index - 1; left_index_++) // Add introns
+                /* Add utr. */
+                if (transcript_node->cds_number)
                 {
-                    (element_array + right_index)->type = 'i';
-                    (element_array + right_index)->next = NULL;
-                    (element_array + right_index)->positions[0] = (element_array + left_index_)->positions[1] + 1;
-                    (element_array + right_index)->positions[1] = (element_array + left_index_ + 1)->positions[0] - 1;
-                    right_index--;
+                    unsigned long cds_min = ULONG_MAX;
+                    unsigned long cds_max = 0;
+                    for (unsigned long element_index_ = transcript_node->exon_number; element_index_ < transcript_node->exon_number + transcript_node->cds_number; element_index_++)
+                    {
+                        if (cds_min > (element_array + element_index_)->positions[0])
+                        {
+                            cds_min = (element_array + element_index_)->positions[0];
+                        };
+                        if (cds_max < (element_array + element_index_)->positions[1])
+                        {
+                            cds_max = (element_array + element_index_)->positions[1];
+                        };
+                    };
+
+                    for (unsigned long element_index_ = 0; element_index_ < transcript_node->exon_number; element_index_++)
+                    {
+                        if ((element_array + element_index_)->positions[0] < cds_min)
+                        {
+                            (element_array + new_transcript_node->element_number)->type = (transcript_node->strand == '-' ? '3' : '5');
+                            (element_array + new_transcript_node->element_number)->next = NULL;
+                            (element_array + new_transcript_node->element_number)->positions[0] = (element_array + element_index_)->positions[0];
+                            (element_array + new_transcript_node->element_number)->positions[1] = (element_array + element_index_)->positions[1] < cds_min ? (element_array + element_index_)->positions[1] : cds_min - 1;
+                            new_transcript_node->element_number++;
+                        };
+                        if ((element_array + element_index_)->positions[1] > cds_max)
+                        {
+                            (element_array + new_transcript_node->element_number)->type = (transcript_node->strand == '-' ? '5' : '3');
+                            (element_array + new_transcript_node->element_number)->next = NULL;
+                            (element_array + new_transcript_node->element_number)->positions[0] = (element_array + element_index_)->positions[0] > cds_max ? (element_array + element_index_)->positions[1] : cds_max + 1;
+                            (element_array + new_transcript_node->element_number)->positions[1] = (element_array + element_index_)->positions[1];
+                            new_transcript_node->element_number++;
+                        };
+                    };
                 };
-                
             };
-            qsort(element_array, element_array_size, sizeof(Element), compare_element);
+            qsort(element_array, new_transcript_node->element_number, sizeof(Element), compare_element);
             new_transcript_node->start = element_array->positions[0];
-            new_transcript_node->end = (element_array + element_array_size - 1)->positions[1];
-            new_transcript_node->element = element_array;
+            new_transcript_node->end = (element_array + new_transcript_node->element_number - 1)->positions[1];
+            new_transcript_node->element = malloc(sizeof(Element) * new_transcript_node->element_number);
+            memcpy(new_transcript_node->element, element_array, sizeof(Element) * new_transcript_node->element_number);
             new_transcript_node->next = NULL;
         };
     };
@@ -251,6 +308,7 @@ static int parse_gene_structure(ChromosomeTranscript **chromosome_transcript_has
             qsort(chromosome_transcript_node->transcript, chromosome_transcript_node->transcript_number, sizeof(Transcript), compare_transcript);
         };
     };
+    free(element_array);
     return 0;
 }
 

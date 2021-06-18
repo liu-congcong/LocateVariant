@@ -62,9 +62,10 @@ static int sort_chromosome_variant_hash(ChromosomeVariant **hash, unsigned long 
             {
                 Variant *variant_node = chromosome_variant_node->variant->next;
                 memcpy(new_variant_node + variant_index, chromosome_variant_node->variant, sizeof(Variant));
-                (new_variant_node + variant_index++)->next = NULL;
+                (new_variant_node + variant_index)->next = NULL;
                 free(chromosome_variant_node->variant);
                 chromosome_variant_node->variant = variant_node;
+                variant_index++;
             };
             qsort(new_variant_node, chromosome_variant_node->variant_number, sizeof(Variant), compare);
             chromosome_variant_node->variant = new_variant_node;

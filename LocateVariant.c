@@ -30,12 +30,12 @@ int main(int argc, char *argv[])
             strncpy(vcf_file, argv[arg_index + 1], FILE_NAME - 1);
             vcf_file[FILE_NAME - 1] = 0;
             nesscessary_parameters++;
-        };
-    };
+        }
+    }
     if (nesscessary_parameters != 2)
     {
         print_help();
-    };
+    }
 
     unsigned long hash_size = 1572869ul;
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
                             if (flag)
                             {
                                 printf("%s\t%s\t%lu\t-\t-\t-\t-\n", variant_node->variant, chromosome, variant_node->position);
-                            };
+                            }
                             break;
                         }
                         else if (variant_node->position <= transcript_node->end) // Overlap.
@@ -105,10 +105,10 @@ int main(int argc, char *argv[])
                                         break;
                                     default:
                                         break;
-                                    };
+                                    }
                                     printf("%s\t%s\t%lu\t%s\t%s\t%lu\t%lu\n", variant_node->variant, chromosome, variant_node->position, transcript_node->transcript, type, element_node->positions[0], element_node->positions[1]);
-                                };
-                            };
+                                }
+                            }
                             transcript_index++;
                             flag = false;
                         }
@@ -120,10 +120,10 @@ int main(int argc, char *argv[])
                         {
                             Transcript_Node++;
                             transcript_number--;
-                        };
-                    };
+                        }
+                    }
                     variant_node++;
-                };
+                }
             }
             else
             {
@@ -131,10 +131,10 @@ int main(int argc, char *argv[])
                 {
                     printf("%s\t%s\t%lu\t-\t-\t-\t-\n", variant_node->variant, chromosome, variant_node->position);
                     variant_node++;
-                };
-            };
-        };
-    };
+                }
+            }
+        }
+    }
     free_chromosome_transcript_hash(chromosome_transcript, hash_size);
     //free_chromosome_transcript_hash//
     return 0;

@@ -17,7 +17,7 @@ unsigned long ElfHash(char *string)
         if (high)
         {
             hash ^= high >> 24;
-        };
+        }
         hash &= ~high;
     }
     return hash;

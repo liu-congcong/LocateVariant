@@ -11,7 +11,8 @@ Locate variants in genes:
 * End: end position of the type (1-based)
 * **Offset: offset will be added soon**
 
-<img width="686" alt="image" src="https://user-images.githubusercontent.com/34596618/122646816-bb4fec00-d153-11eb-91a5-da4b333c4942.png">
+<img width="1089" alt="image" src="https://user-images.githubusercontent.com/34596618/122646954-71b3d100-d154-11eb-945e-27061a9c3d71.png">
+
 
 ## Installation
 

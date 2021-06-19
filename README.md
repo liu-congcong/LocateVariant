@@ -6,7 +6,7 @@ Locate variants in genes:
 * Chromosome: chromosome id
 * Position: position (1-based)
 * Transcript: transcript id | - (intergenic region)
-* Type: exon | promoter | cds (**5'utr and 3'utr will be added soon**)
+* Type: exon | promoter | cds | 5'utr | 3'utr
 * Start: start position of the type (1-based)
 * End: end position of the type (1-based)
 * **Offset: offset will be added soon**
@@ -24,3 +24,7 @@ gcc *.c -o LocateVariant
 ```shell
 LocateVariant -vcf VCF -gff GFF > OUTPUT
 ```
+
+## Change logs
+
+* 2021/06/19: Add 5'utr and 3'utr support.

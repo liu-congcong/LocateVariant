@@ -6,9 +6,9 @@
 #include "gff_reader.h"
 #include "vcf_reader.h"
 
-static int print_help()
+static int print_help(char *program)
 {
-    printf("Usage:\nLocateVariant -gff GFF -vcf VCF.\n");
+    printf("Usage:\n%s -gff GFF -vcf VCF.\n", program);
     exit(EXIT_SUCCESS);
 }
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     }
     if (nesscessary_parameters != 2)
     {
-        print_help();
+        print_help(argv[0]);
     }
 
     unsigned long hash_size = 1572869ul;

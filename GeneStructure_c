@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include "hash.h"
+#include "gff_reader.h"
+
+static int print_help(char *program)
+{
+    printf("Usage:\n%s -gff GFF.\n", program);
+    exit(EXIT_SUCCESS);
+}
+
+int main(int argc, char *argv[])
+{
+    char gff_file[FILE_NAME];
+    int nesscessary_parameters = 0;
+    for (int arg_index = 1; arg_index < argc - 1; arg_index += 2)
+    {
+        if (!strcmp(argv[arg_index], "-gff"))
+        {
+            strncpy(gff_file, argv[arg_index + 1], FILE_NAME - 1);
+            gff_file[FILE_NAME - 1] = 0;
+            nesscessary_parameters++;
+        }
+    }
+    if (nesscessary_parameters != 1)
+    {
+        print_help(argv[0]);
+    }
+
+    unsigned long hash_size = 1572869ul;
+
+    ChromosomeTranscript **chromosome_transcript = NULL;
+
+    read_gff_file(gff_file, &chromosome_transcript, hash_size);
+
+    char type[20];
+
+    printf("transcript\tstrand\ttype\tchromosome\tstart\tend\n");
+    for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++)
+    {
+        for (ChromosomeTranscript *chromosome_transcript_node = chromosome_transcript[hash_index]; chromosome_transcript_node; chromosome_transcript_node = chromosome_transcript_node->next)
+        {
+            // chromosome: chromosome_transcript_node->chromosome
+            for (unsigned long transcript_index = 0; transcript_index < chromosome_transcript_node->transcript_number; transcript_index++)
+            {
+                Transcript *transcript_node = chromosome_transcript_node->transcript + transcript_index;
+                for (unsigned long element_index = 0; element_index < transcript_node->element_number; element_index++)
+                {
+                    Element *element = transcript_node->element + element_index;
+                    switch (element->type)
+                    {
+                    case 'p':
+                        strcpy(type, "promoter");
+                        break;
+                    case '5':
+                        strcpy(type, "5'utr");
+                        break;
+                    case '3':
+                        strcpy(type, "3'utr");
+                        break;
+                    case 'e':
+                        strcpy(type, "exon");
+                        break;
+                    case 'c':
+                        strcpy(type, "cds");
+                        break;
+                    case 'i':
+                        strcpy(type, "intron");
+                        break;
+                    default:
+                        strcpy(type, "?");
+                        break;
+                    }
+                    printf("%s\t%c\t%s\t%s\t%lu\t%lu\n", transcript_node->transcript, transcript_node->strand, type, chromosome_transcript_node->chromosome, element->positions[0], element->positions[1]);
+                }
+            }
+        }
+    }
+    free_chromosome_transcript_hash(chromosome_transcript, hash_size);
+    return 0;
+}

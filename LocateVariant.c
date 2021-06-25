@@ -180,23 +180,23 @@ int main(int argc, char *argv[])
     bool vcf_flag = false;
     bool gene_structure_flag = false;
 
-    for (int arg_index = 1; arg_index < argc; arg_index++)
+    for (int index = 1; index < argc; index++)
     {
-        if (!strcmp(argv[arg_index], "-gff"))
+        if (!strcmp(argv[index], "-gff"))
         {
-            assert(arg_index + 1 < argc);
-            strncpy(gff, argv[arg_index + 1], FILE_NAME);
+            assert(index + 1 < argc);
+            strncpy(gff, argv[index + 1], FILE_NAME);
             gff[FILE_NAME - 1] = 0;
             gff_flag = true;
         }
-        else if (!strcmp(argv[arg_index], "-vcf"))
+        else if (!strcmp(argv[index], "-vcf"))
         {
-            assert(arg_index + 1 < argc);
-            strncpy(vcf, argv[arg_index + 1], FILE_NAME);
+            assert(index + 1 < argc);
+            strncpy(vcf, argv[index + 1], FILE_NAME);
             vcf[FILE_NAME - 1] = 0;
             vcf_flag = true;
         }
-        else if (!strcmp(argv[arg_index], "-print_gene_structure"))
+        else if (!strcmp(argv[index], "-print_gene_structure"))
         {
             gene_structure_flag = true;
         }

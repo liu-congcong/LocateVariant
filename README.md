@@ -31,7 +31,7 @@ LocateVariant -gff GFF -print_gene_structure > OUTPUT
 
 ## Output
 
-* Locate variant:
+### Locate variant
 
 |Variant|Chromosome|Position|Transcript|Type|Start|End|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -45,7 +45,7 @@ LocateVariant -gff GFF -print_gene_structure > OUTPUT
 |ENSVATH04500212|1|11760|transcript:AT1G01030.2|3'utr|11649|11863|
 |ENSVATH04500212|1|11760|transcript:AT1G01030.1|3'utr|11649|11863|
 
-* Print gene structure:
+### Print gene structure
 
 |Transcript|Strand|Type|Chromosome|Start|End|
 |:-:|:-:|:-:|:-:|:-:|:-:|

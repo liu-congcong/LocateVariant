@@ -11,6 +11,8 @@ Locate variants in genes:
 * End: end position of the type (1-based)
 * **Offset: offset will be added soon**
 
+**Locate variant:**
+
 |Variant|Chromosome|Position|Transcript|Type|Start|End|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |tmp_1_3592_G_C|1|3592|transcript:AT1G01010.1|promoter|1631|3630|
@@ -22,6 +24,31 @@ Locate variants in genes:
 |...|...|...|...|...|...|...|
 |ENSVATH04500212|1|11760|transcript:AT1G01030.2|3'utr|11649|11863|
 |ENSVATH04500212|1|11760|transcript:AT1G01030.1|3'utr|11649|11863|
+
+**Print gene structure:**
+
+|Transcript|Strand|Type|Chromosome|Start|End|
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|transcript:AT1G01010.1|+|promoter|1|1631|3630|
+|transcript:AT1G01010.1|+|5'utr|1|3631|3759|
+|transcript:AT1G01010.1|+|exon|1|3631|3913|
+|transcript:AT1G01010.1|+|cds|1|3760|3913|
+|transcript:AT1G01010.1|+|intron|1|3914|3995|
+|transcript:AT1G01010.1|+|cds|1|3996|4276|
+|transcript:AT1G01010.1|+|exon|1|3996|4276|
+|transcript:AT1G01010.1|+|intron|1|4277|4485|
+|transcript:AT1G01010.1|+|exon|1|4486|4605|
+|transcript:AT1G01010.1|+|cds|1|4486|4605|
+|transcript:AT1G01010.1|+|intron|1|4606|4705|
+|transcript:AT1G01010.1|+|exon|1|4706|5095|
+|transcript:AT1G01010.1|+|cds|1|4706|5095|
+|transcript:AT1G01010.1|+|intron|1|5096|5173|
+|transcript:AT1G01010.1|+|exon|1|5174|5326|
+|transcript:AT1G01010.1|+|cds|1|5174|5326|
+|transcript:AT1G01010.1|+|intron|1|5327|5438|
+|transcript:AT1G01010.1|+|cds|1|5439|5630|
+|transcript:AT1G01010.1|+|exon|1|5439|5899|
+|transcript:AT1G01010.1|+|3'utr|1|5631|5899|
 
 ## Installation
 

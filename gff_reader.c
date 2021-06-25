@@ -192,7 +192,14 @@ static int parse_gene_structure(ChromosomeTranscript **chromosome_transcript_has
     }
     element_array_size = 3 * element_array_size + 2;
     Element *element_array = malloc(sizeof(Element) * element_array_size);
-
+    /*
+    Structure of element_array:
+        exon
+        cds
+        intron
+        promoter if existed
+        utr
+    */
     for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++)
     {
         for (Transcript *transcript_node = transcript_hash[hash_index]; transcript_node; transcript_node = transcript_node->next)
@@ -244,15 +251,17 @@ static int parse_gene_structure(ChromosomeTranscript **chromosome_transcript_has
                 if (transcript_node->strand == '-')
                 {
                     (element_array + new_transcript_node->element_number)->positions[0] = (element_array + transcript_node->exon_number - 1)->positions[1] + 1;
-                    (element_array + new_transcript_node->element_number)->positions[1] = (element_array + transcript_node->exon_number - 1)->positions[1] + 2000;
+                    (element_array + new_transcript_node->element_number)->positions[1] = (element_array + transcript_node->exon_number - 1)->positions[1] + PROMOTER;
+                    (element_array + new_transcript_node->element_number)->type = 'p';
+                    new_transcript_node->element_number++;
                 }
-                else
+                else if ((element_array + new_transcript_node->element_number)->positions[0] != 1)
                 {
-                    (element_array + new_transcript_node->element_number)->positions[0] = element_array->positions[0] >= 2000 ? element_array->positions[0] - 2000 : 0;
+                    (element_array + new_transcript_node->element_number)->positions[0] = element_array->positions[0] > PROMOTER ? element_array->positions[0] - PROMOTER : 1;
                     (element_array + new_transcript_node->element_number)->positions[1] = element_array->positions[0] - 1;
+                    (element_array + new_transcript_node->element_number)->type = 'p';
+                    new_transcript_node->element_number++;
                 }
-                (element_array + new_transcript_node->element_number)->type = 'p';
-                new_transcript_node->element_number++;
 
                 /* Add utr. */
                 if (transcript_node->cds_number)

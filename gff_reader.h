@@ -6,6 +6,8 @@
 
 #define FILE_NAME 10240
 
+#define PROMOTER 2000
+
 typedef struct Element
 {
     char type;

@@ -21,6 +21,8 @@ typedef struct ChromosomeVariant
     struct ChromosomeVariant *next;
 } ChromosomeVariant;
 
-int read_vcf_file(char *, ChromosomeVariant ***, size_t);
+int read_vcf_file(char *, ChromosomeVariant ***, unsigned long);
+
+int free_chromosome_variant_hash(ChromosomeVariant **, unsigned long);
 
 #endif

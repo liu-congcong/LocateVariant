@@ -56,7 +56,7 @@ static int sort_chromosome_variant_hash(ChromosomeVariant **hash, unsigned long 
     {
         for (ChromosomeVariant *chromosome_variant_node = hash[hash_index]; chromosome_variant_node; chromosome_variant_node = chromosome_variant_node->next)
         {
-            Variant *new_variant_node = malloc(sizeof(Variant) * chromosome_variant_node->variant_number);
+            Variant *new_variant_node = malloc(sizeof(Variant) * chromosome_variant_node->variant_number); // Head node.
             unsigned long variant_index = 0;
             while (chromosome_variant_node->variant)
             {
@@ -97,5 +97,23 @@ int read_vcf_file(char *file, ChromosomeVariant ***chromosome_variant_hash, unsi
     }
     fclose(open_file);
     sort_chromosome_variant_hash(*chromosome_variant_hash, hash_size);
+    return 0;
+}
+
+int free_chromosome_variant_hash(ChromosomeVariant **chromosome_variant_hash, unsigned long hash_size)
+{
+    for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++)
+    {
+        for (ChromosomeVariant *chromosome_variant_node = chromosome_variant_hash[hash_index]; chromosome_variant_node; chromosome_variant_node = chromosome_variant_node->next)
+        {
+            for (unsigned long variant_index = 0; variant_index < chromosome_variant_node->variant_number; variant_index++)
+            {
+                free((chromosome_variant_node->variant + variant_index)->variant);
+            }
+            free(chromosome_variant_node->chromosome);
+            free(chromosome_variant_node->variant);
+        }
+    }
+    free(chromosome_variant_hash);
     return 0;
 }

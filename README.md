@@ -11,7 +11,27 @@ Locate variants in genes:
 * End: end position of the type (1-based)
 * **Offset: offset will be added soon**
 
-**Locate variant:**
+## Installation
+
+```shell
+git clone https://github.com/liu-congcong/LocateVariant.git
+cd LocateVariant
+gcc *.c -o LocateVariant
+```
+
+## Usage
+
+```shell
+# Locate variant. #
+LocateVariant -vcf VCF -gff GFF > OUTPUT
+
+# Print gene structure. #
+LocateVariant -gff GFF -print_gene_structure > OUTPUT
+```
+
+## Output
+
+* Locate variant:
 
 |Variant|Chromosome|Position|Transcript|Type|Start|End|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -25,7 +45,7 @@ Locate variants in genes:
 |ENSVATH04500212|1|11760|transcript:AT1G01030.2|3'utr|11649|11863|
 |ENSVATH04500212|1|11760|transcript:AT1G01030.1|3'utr|11649|11863|
 
-**Print gene structure:**
+* Print gene structure:
 
 |Transcript|Strand|Type|Chromosome|Start|End|
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -50,25 +70,14 @@ Locate variants in genes:
 |transcript:AT1G01010.1|+|exon|1|5439|5899|
 |transcript:AT1G01010.1|+|3'utr|1|5631|5899|
 
-## Installation
-
-```shell
-git clone https://github.com/liu-congcong/LocateVariant.git
-cd LocateVariant
-gcc *.c -o LocateVariant
-```
-
-## Usage
-
-```shell
-# Locate variant. #
-LocateVariant -vcf VCF -gff GFF > OUTPUT
-
-# Print gene structure. #
-LocateVariant -gff GFF -print_gene_structure > OUTPUT
-```
-
 ## Change logs
 
-* 2021/06/19: Add 5'utr and 3'utr support.
-* 2021/06/25: Add a function to print gene structure.
+### 2021/06/19
+
+* Add 5'utr and 3'utr support.
+
+### 2021/06/25
+
+* Add a function to print gene structure.
+
+* Suppress the promoter if a transcript(+) has a start position of 1.

@@ -2,48 +2,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 #include "hash.h"
 #include "gff_reader.h"
 #include "vcf_reader.h"
 
 static int print_help(char *program)
 {
-    printf("Usage:\n%s -gff GFF -vcf VCF.\n", program);
+    printf("Usage:\n");
+    printf("%s -gff GFF -vcf VCF.\n", program);
+    printf("%s -gff GFF -print_gene_structure.\n", program);
     exit(EXIT_SUCCESS);
 }
 
-int main(int argc, char *argv[])
+static int locate_variant(char *gff, char *vcf)
 {
-    char gff_file[FILE_NAME];
-    char vcf_file[FILE_NAME];
-    int nesscessary_parameters = 0;
-    for (int arg_index = 1; arg_index < argc - 1; arg_index += 2)
-    {
-        if (!strcmp(argv[arg_index], "-gff"))
-        {
-            strncpy(gff_file, argv[arg_index + 1], FILE_NAME - 1);
-            gff_file[FILE_NAME - 1] = 0;
-            nesscessary_parameters++;
-        }
-        else if (!strcmp(argv[arg_index], "-vcf"))
-        {
-            strncpy(vcf_file, argv[arg_index + 1], FILE_NAME - 1);
-            vcf_file[FILE_NAME - 1] = 0;
-            nesscessary_parameters++;
-        }
-    }
-    if (nesscessary_parameters != 2)
-    {
-        print_help(argv[0]);
-    }
-
     unsigned long hash_size = 1572869ul;
 
     ChromosomeTranscript **chromosome_transcript = NULL;
     ChromosomeVariant **chromosome_variant = NULL;
 
-    read_gff_file(gff_file, &chromosome_transcript, hash_size);
-    read_vcf_file(vcf_file, &chromosome_variant, hash_size);
+    read_gff_file(gff, &chromosome_transcript, hash_size);
+    read_vcf_file(vcf, &chromosome_variant, hash_size);
 
     char type[9];
     printf("Variant\tChromosome\tPosition\tTranscript\tType\tStart\tEnd\n");
@@ -136,6 +116,105 @@ int main(int argc, char *argv[])
         }
     }
     free_chromosome_transcript_hash(chromosome_transcript, hash_size);
-    //free_chromosome_transcript_hash//
+    return 0;
+}
+
+static int print_gene_structure(char *gff)
+{
+    unsigned long hash_size = 1572869ul;
+
+    ChromosomeTranscript **chromosome_transcript = NULL;
+
+    read_gff_file(gff, &chromosome_transcript, hash_size);
+
+    char type[9];
+
+    printf("Transcript\tStrand\tType\tChromosome\tStart\tEnd\n");
+    for (unsigned long hash_index = 0; hash_index < hash_size; hash_index++)
+    {
+        for (ChromosomeTranscript *chromosome_transcript_node = chromosome_transcript[hash_index]; chromosome_transcript_node; chromosome_transcript_node = chromosome_transcript_node->next)
+        {
+            // chromosome: chromosome_transcript_node->chromosome
+            for (unsigned long transcript_index = 0; transcript_index < chromosome_transcript_node->transcript_number; transcript_index++)
+            {
+                Transcript *transcript_node = chromosome_transcript_node->transcript + transcript_index;
+                for (unsigned long element_index = 0; element_index < transcript_node->element_number; element_index++)
+                {
+                    Element *element = transcript_node->element + element_index;
+                    switch (element->type)
+                    {
+                    case 'p':
+                        strcpy(type, "promoter");
+                        break;
+                    case '5':
+                        strcpy(type, "5'utr");
+                        break;
+                    case '3':
+                        strcpy(type, "3'utr");
+                        break;
+                    case 'e':
+                        strcpy(type, "exon");
+                        break;
+                    case 'c':
+                        strcpy(type, "cds");
+                        break;
+                    case 'i':
+                        strcpy(type, "intron");
+                        break;
+                    default:
+                        break;
+                    }
+                    printf("%s\t%c\t%s\t%s\t%lu\t%lu\n", transcript_node->transcript, transcript_node->strand, type, chromosome_transcript_node->chromosome, element->positions[0], element->positions[1]);
+                }
+            }
+        }
+    }
+    free_chromosome_transcript_hash(chromosome_transcript, hash_size);
+    return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    char gff[FILE_NAME];
+    char vcf[FILE_NAME];
+
+    bool gff_flag = false;
+    bool vcf_flag = false;
+    bool gene_structure_flag = false;
+
+    for (int arg_index = 1; arg_index < argc; arg_index++)
+    {
+        if (!strcmp(argv[arg_index], "-gff"))
+        {
+            assert(arg_index + 1 < argc);
+            strncpy(gff, argv[arg_index + 1], FILE_NAME);
+            gff[FILE_NAME - 1] = 0;
+            gff_flag = true;
+        }
+        else if (!strcmp(argv[arg_index], "-vcf"))
+        {
+            assert(arg_index + 1 < argc);
+            strncpy(vcf, argv[arg_index + 1], FILE_NAME);
+            vcf[FILE_NAME - 1] = 0;
+            vcf_flag = true;
+        }
+        else if (!strcmp(argv[arg_index], "-print_gene_structure"))
+        {
+            gene_structure_flag = true;
+        }
+    }
+
+    if (gff_flag && vcf_flag)
+    {
+        locate_variant(gff, vcf);
+    }
+    else if (gff_flag && gene_structure_flag)
+    {
+        print_gene_structure(gff);
+    }
+    else
+    {
+        print_help(argv[0]);
+    }
     return 0;
 }

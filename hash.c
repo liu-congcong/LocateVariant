@@ -1,5 +1,3 @@
-#include <math.h>
-
 unsigned long ElfHash(char *string)
 {
     /*

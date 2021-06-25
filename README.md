@@ -34,9 +34,14 @@ gcc *.c -o LocateVariant
 ## Usage
 
 ```shell
+# Locate variant. #
 LocateVariant -vcf VCF -gff GFF > OUTPUT
+
+# Print gene structure. #
+LocateVariant -gff GFF -print_gene_structure > OUTPUT
 ```
 
 ## Change logs
 
 * 2021/06/19: Add 5'utr and 3'utr support.
+* 2021/06/25: Add a function to print gene structure.

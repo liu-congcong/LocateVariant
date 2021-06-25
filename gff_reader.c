@@ -255,7 +255,7 @@ static int parse_gene_structure(ChromosomeTranscript **chromosome_transcript_has
                     (element_array + new_transcript_node->element_number)->type = 'p';
                     new_transcript_node->element_number++;
                 }
-                else if (element_array->positions[0] != 1)
+                else if (element_array->positions[0] != 1) // +, the 1st exon
                 {
                     (element_array + new_transcript_node->element_number)->positions[0] = element_array->positions[0] > PROMOTER ? element_array->positions[0] - PROMOTER : 1;
                     (element_array + new_transcript_node->element_number)->positions[1] = element_array->positions[0] - 1;

@@ -1,4 +1,4 @@
-CC = cc
+CC = cc -std=gnu99
 
 LocateVariant: LocateVariant.c gff_reader.o gff_reader.h hash.o hash.h vcf_reader.o vcf_reader.h
 	${CC} -Wall -g -o LocateVariant LocateVariant.c gff_reader.o hash.o vcf_reader.o

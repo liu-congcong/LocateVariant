@@ -16,7 +16,7 @@ Locate variants in genes:
 ```shell
 git clone https://github.com/liu-congcong/LocateVariant.git
 cd LocateVariant
-gcc *.c -o LocateVariant
+make && make clean
 ```
 
 ## Usage
